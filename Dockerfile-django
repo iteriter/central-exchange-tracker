@@ -1,0 +1,18 @@
+# Be aware that you need to specify these arguments before the first FROM
+# see: https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
+ARG BASE_IMAGE=pfeiffermax/python-poetry:1.11.0-poetry1.8.3-python3.12.3-bookworm
+FROM ${BASE_IMAGE} as build-stage
+
+
+FROM ${BASE_IMAGE} as production-image
+
+COPY ./poetry.lock ./pyproject.toml /
+
+# Copy application files
+COPY /crypto_api /crypto_api/
+
+RUN poetry install --no-interaction --no-root --without dev
+
+ENV PYTHONPATH=.
+
+CMD ["poetry", "run", "python3", "/crypto_api/manage.py", "runserver", "0.0.0.0:3000"]
