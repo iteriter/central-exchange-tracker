@@ -1,6 +1,20 @@
 ## installation
 ```docker build & docker compose up -d```
 
+## usage
+after starting the docker containers, api service should be available at
+```http://127.0.0.1:3000```
+
+below are the supported endpoints for the api service
+
+```http://127.0.0.1:3000/crypto/exchanges/``` -- list all available exchanges. note: 'average' is a synthetic exchange aggregating prices from all exchanges
+```http://127.0.0.1:3000/crypto/price/``` -- list prices for all pairs, on all exchanges, including the 'average' exchange
+```http://127.0.0.1:3000/crypto/price?exchange=kraken``` -- list prices for all pairs on the given exchange, in this case 'kraken'
+```http://127.0.0.1:3000/crypto/price?pair=BTCUSDT``` -- list prices for the given pair on all exchanges, including the 'average' exchange
+```http://127.0.0.1:3000/crypto/price?pair=BTCUSDT&exchange=kraken``` -- get the price for the specified pair on the given exchange
+
+all pair names are normalised across exchanges into the format of [BASE][QUOTE], e.g. BTCUSDT, ETHUSDT, etc.
+
 ## architecture
 The Django app and the Exchanges parser are running as separate instances,
 communicating via the redis app. As pairs data becomes available on the websockets,
