@@ -1,10 +1,8 @@
 import asyncio
 import json
-from pprint import pprint
 from typing import override
 
 
-import websockets
 from loguru import logger
 from websockets.asyncio.client import connect
 
@@ -103,18 +101,6 @@ class Kraken(BaseExchange):
     @override
     async def subscribe(self, socket, pairs):
         tickers = [f"{self._make_pair_label(p)}" for p in pairs]
-        pprint(
-            json.dumps(
-                {
-                    "method": "subscribe",
-                    "params": {
-                        "channel": "ticker",
-                        "symbol": tickers,
-                        "snapshot": False,
-                    },
-                }
-            )
-        )
         await socket.send(
             json.dumps(
                 {

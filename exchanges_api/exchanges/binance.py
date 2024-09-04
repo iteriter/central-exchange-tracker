@@ -1,6 +1,5 @@
 import asyncio
 import json
-from pprint import pprint
 from typing import override
 
 import httpx

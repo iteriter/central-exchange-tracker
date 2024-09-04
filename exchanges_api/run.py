@@ -1,6 +1,5 @@
 import asyncio
 from collections import defaultdict
-from pprint import pprint
 from statistics import mean
 
 from loguru import logger
@@ -113,27 +112,6 @@ class PriceService:
         """
         Update the average price of pair across all exchanges
         """
-        for name, cex in self.pairs_by_exchange.items():
-            if cex[pair]:
-                print(name, cex[pair]["price"])
-
-        print(
-            pair,
-            "mean of ",
-            [
-                cex[pair]["price"]
-                for cex in self.pairs_by_exchange.values()
-                if cex[pair]
-            ],
-            mean(
-                [
-                    cex[pair]["price"]
-                    for cex in self.pairs_by_exchange.values()
-                    if cex[pair]
-                ]
-            ),
-        )
-
         with self.redis.pipeline() as p:
             p.hset(
                 f"average:{pair.base}{pair.quote}",

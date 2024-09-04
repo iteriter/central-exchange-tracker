@@ -1,7 +1,7 @@
 import re
 
 import redis
-from django.http import JsonResponse
+from django.http import HttpResponseBadRequest, HttpResponseNotFound, JsonResponse
 from redis.commands.search.query import Query
 
 from public_api.conf import get_config
@@ -41,10 +41,16 @@ def get_pair(pair_id):
         if r:
             result[ex] = r.decode()
 
+    if not result:
+        return HttpResponseNotFound("Pair not found on any exchanges")
+
     return {"result": result}
 
 
 def get_exchange_pairs(exchange_id):
+    if exchange_id not in get_exchanges():
+        return HttpResponseNotFound("Exchange not supported")
+
     index = redis.ft(index_name=f"idx:{exchange_id}")
     res = index.search(Query("*").paging(0, 10000).sort_by("pair_id"))
 
@@ -54,7 +60,12 @@ def get_exchange_pairs(exchange_id):
 
 
 def get_pair_on_exchange(pair_id, exchange_id):
+    if exchange_id not in get_exchanges():
+        return HttpResponseNotFound("Exchange not supported")
+
     r = redis.hget(f"{exchange_id}:{pair_id}", "price")
+    if not r:
+        return {"error": f"Pair not found on exchange {exchange_id}"}
     return {"pair": pair_id, "price": r.decode()}
 
 
@@ -80,7 +91,10 @@ def fetch(request):
     exchange_id = request.GET.get("exchange")
 
     if pair_id:
-        pair_id = validate_pair_id(pair_id)
+        try:
+            pair_id = validate_pair_id(pair_id)
+        except ValueError as e:
+            return HttpResponseBadRequest(str(e))
 
     if pair_id and exchange_id:
         r = get_pair_on_exchange(pair_id=pair_id, exchange_id=exchange_id)
